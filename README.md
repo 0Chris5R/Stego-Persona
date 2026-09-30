@@ -1,8 +1,8 @@
-# 🎭 Persona Vectors: Monitoring and Controlling Character Traits in Language Models
+# Stego-Persona
 
-This is the official repository for **Persona Vectors**, a method for monitoring and controlling character traits in language models.
+This fork keeps the full [Persona Vectors](https://github.com/safety-research/persona_vectors) pipeline for trait data, activation extraction, evaluation, steering, and training. We are adding steganography experiments to it. The steganography work currently covers **data generation only**; steganography activations and vectors have not been extracted.
 
-## 🚀 Quick Start
+## 🚀 Persona Vectors quick start
 
 ### ⚙️ Setup
 
@@ -29,6 +29,21 @@ Extract the training datasets:
 ```bash
 unzip dataset.zip
 ```
+
+## Steganography data generation
+
+The steganography generator lives in `data_generation/`. It creates matched Covert, Overt, Normal, and Concealment answers from a shared question pool, then checks each group before accepting it. This is separate from the original trait artifacts below.
+
+On a GPU with at least 80 GB of memory, use the steganography dependencies and runner:
+
+```bash
+bash scripts/runpod_setup.sh
+bash scripts/run_stego.sh /workspace/runs/stego_qwen38_thinking_v1
+```
+
+The runner uses [Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B) through vLLM. Writer calls use `low` thinking with a 4,096-token budget; receiver and judge calls do not. The default batch size is 32. It prepares 30,000 candidate cases and stops at 100 accepted matched groups. Settings are in `configs/stego.json`. `scripts/runpod_setup.sh` installs `data_generation/requirements.txt`; the root `requirements.txt` belongs to the original Persona Vectors pipeline.
+
+Each run directory contains the sampled cases, generation and decision logs, accepted groups, and CSV/HTML/ZIP exports. `python -m stego validate` checks the authored banks; `python -m stego prepare --out PATH` and `python -m stego run --out PATH` run the two stages separately. Rerunning `run` in the same directory resumes saved work. No steganography activation extraction is part of this stage.
 
 ## 🏗️ Pipeline
 
@@ -227,6 +242,7 @@ bash scripts/cal_projection.sh
 | `scripts/eval_steering.sh` | Evaluate steering effectiveness | `bash scripts/eval_steering.sh` |
 | `scripts/eval_persona.sh` | Basic persona evaluation | `bash scripts/eval_persona.sh` |
 | `scripts/cal_projection.sh` | Calculate projection | `bash scripts/cal_projection.sh` |
+| `scripts/run_stego.sh` | Generate and check matched steganography answers | `bash scripts/run_stego.sh OUTPUT_DIR` |
 
 ## 📄 License
 
